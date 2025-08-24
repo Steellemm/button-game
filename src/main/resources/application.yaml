@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: button-game
+server:
+  port: 8111
