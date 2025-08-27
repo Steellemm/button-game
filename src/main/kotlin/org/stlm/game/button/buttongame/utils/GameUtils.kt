@@ -1,6 +1,6 @@
 package org.stlm.game.button.buttongame.utils
 
-import org.stlm.game.button.buttongame.model.FrontButton
+import org.stlm.game.button.buttongame.model.ChangeState
 import org.stlm.game.button.buttongame.model.GameState
 import kotlin.random.Random
 
@@ -14,16 +14,15 @@ val backgroundToneList = listOf(40, 50, 60, 70, 80, 90, 100)
 val heightList = listOf(60, 80, 100, 100, 100, 120, 140)
 val weightList = listOf(80, 100, 100, 100, 120, 140, 160)
 
-fun generateButtons(round: Int): List<FrontButton> {
-    val buttonsCount = round + 3
+fun calculateNewLevel(gameState: GameState): Int {
     return when {
-        round < 3 -> level1(buttonsCount)
-        round < 6 -> level2(buttonsCount)
-        round < 11 -> level3(buttonsCount)
-        round < 18 -> level4(buttonsCount)
-        round < 22 -> level5(buttonsCount)
-        round < 27 -> level6(buttonsCount)
-        else -> lastLevel(buttonsCount)
+        gameState.round <= 5 -> 1
+        gameState.round <= 10 -> 2
+        gameState.round <= 15 -> 3
+        gameState.round <= 20 -> 4
+        gameState.round <= 25 -> 5
+        gameState.round <= 30 -> 6
+        else -> 7
     }
 }
 
@@ -32,6 +31,20 @@ fun calculateLeftTime(gameState: GameState): Int {
         return INITIAL_TIME
     }
     return (INITIAL_TIME - (System.currentTimeMillis() - gameState.gameStartTime) / 1000 + gameState.bonusTime).toInt()
+}
+
+fun generateMessage(changeState: ChangeState): String {
+    val part1 = if (changeState.bonusTime > 0) {
+        "+${changeState.bonusTime}s"
+    } else {
+        null
+    }
+    val part2 = if (changeState.changeButtonCount < 0) {
+        "${changeState.changeButtonCount} btns"
+    } else {
+        null
+    }
+    return sequenceOf(part1, part2).filterNotNull().joinToString("\n")
 }
 
 fun generateUniqueArray(length: Int, maxSize: Int): IntArray {

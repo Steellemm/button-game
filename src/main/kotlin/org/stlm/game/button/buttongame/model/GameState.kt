@@ -4,9 +4,7 @@ data class GameState (
     var gameStarted: Boolean = false,
     var gameStartTime: Long = 0L,
     var round: Int = 0,
-    var winButtonId: Int = 0,
-    var explainer: String = "",
     var bonusTime: Int = 0,
-    val roundWinners: MutableSet<String> = mutableSetOf(),
-    val explainers: MutableSet<String> = mutableSetOf()
+    var level: Int = 1,
+    var buttonCount: Int = 3,
 )

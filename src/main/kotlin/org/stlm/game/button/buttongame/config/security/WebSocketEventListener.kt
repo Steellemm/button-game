@@ -25,7 +25,7 @@ class WebSocketEventListener(
             val destination = event.message.headers.get("simpDestination", String::class.java)
             if (destination == "/lobby") {
                 val principal = event.user as StompPrincipal
-                gameService.addPlayer(principal.name)
+                gameService.addPlayer(principal.name, principal.playerName)
             }
         } catch (e: Exception) {
             logger.error(e) { "handleSessionSubscribeEvent error" }

@@ -4,25 +4,69 @@ let stompClient
 let isReady = false
 var timer
 
+const $authContainer = $('#auth-container');
+const $bossDiv = $('#boss-div');
+const $bossButtonDiv = $('#boss-button-div');
+const $bossButtonName = $('#boss-button-name');
+const $bossButtonText = $('#boss-button-body-div');
+const $bossButtonHp = $('#boss-button-hp');
+const $bossButtonMaxHp = $('#boss-button-max-hp');
+const $hintContainer = $('#hint-div');
 const $canvasContainer = $('#canvas-container');
+const $playerList = $('#player-list');
+const $statusButton = $('#status-button');
 const colorMap = {
     background: {
         0: 'azure',
         1: 'black',
         2: 'green',
         3: 'red',
-        4: 'blue'
+        4: 'blue',
+        5: 'yellow'
     },
     text: {
         0: 'azure',
         1: 'black',
         2: 'green',
         3: 'red',
-        4: 'blue'
+        4: 'blue',
+        5: 'yellow'
     }
 };
 
-subscribe()
+showBoss(null)
+main()
+
+function main() {
+    let cookies = parseCookie()
+    if (cookies['button-game-name'] === undefined) {
+        $authContainer.show()
+    } else {
+        $authContainer.hide()
+        let playerName = $('#regName')[0].value
+        subscribe(playerName)
+    }
+}
+
+function setName() {
+    $authContainer.hide()
+    let playerName = $('#regName')[0].value
+    document.cookie = `button-game-name=${playerName}`
+    subscribe(playerName)
+}
+
+function parseCookie() {
+    if (document.cookie === '') {
+        return {}
+    }
+    return document.cookie
+        .split(';')
+        .map(v => v.split('='))
+        .reduce((acc, v) => {
+            acc[decodeURIComponent(v[0].trim())] = decodeURIComponent(v[1].trim());
+            return acc;
+        }, {});
+}
 
 function subscribe() {
     if (sock !== undefined && stompClient !== undefined && !stompClient.connected) {
@@ -56,30 +100,44 @@ function processTopicMessage(message) {
         alert(message['message']);
     }
     if (message['type'] === 'PlayersNumberChangeEvent') {
-        changePlayersNumber(message.playersNumber)
+        //changePlayersNumber(message.playersNumber)
+        refreshPlayerList(message.players)
     }
     if (message['type'] === 'FoulEvent') {
         setTimer(message.leftTime)
         deleteButton(message.buttonId)
     }
+    if (message['type'] === 'RightClickEvent') {
+        rightClick(message.buttonId)
+    }
+    if (message['type'] === 'PlayerPassEvent') {
+        playerPassed(message.player.id)
+    }
     if (message['type'] === 'GameOverEvent') {
         clearInterval(timer);
         timer = undefined
         changeReady(false)
+        $statusButton.show()
         alert("Game Over")
+        setHint("Wait other players")
+        setBackground(0)
     }
-    if (message['type'] === 'StartChooserGameEvent') {
+    if (message['type'] === 'NewLevelGameEvent') {
         setTimer(message.leftTime)
         setRound(message.round)
+        setLevel(message.level)
         processResponse(message.buttons)
+        returnPlayersStatus()
+        colorExplainer(message.explainerId)
+        $statusButton.hide()
+        setHint(message.hint)
+        setBackground(message.background)
+        showBoss(message.boss)
     }
-    if (message['type'] === 'StartExplainGameEvent') {
-        setTimer(message.leftTime)
-        setRound(message.round)
-        processResponse([message.button])
+    if (message['type'] === 'NewBossStateEvent') {
+        changeBossState(message)
     }
     if (message['type'] === 'ReadyEvent') {
-        changePlayersNumber(message.playersNumber)
         changeReady(message.ready)
     }
     console.log(message)
@@ -94,9 +152,16 @@ function handleButtonClick(id) {
     stompClient.send('/app/lobby/input/pressButton', {}, JSON.stringify({buttonId: id}))
 }
 
-function changePlayersNumber(playersNumber) {
-    $('#players-count').text(playersNumber)
+function refreshPlayerList(players) {
+    $playerList.empty()
+
+    players.forEach(player => $playerList.append($(`
+     <div class="player-item" data-id="${player.id}">
+            <span class="player-name">${player.name}</span>
+        </div>
+    `)))
 }
+
 
 function setTimer(leftTime) {
     let countElement = $('#timer-count');
@@ -120,17 +185,81 @@ function setRound(round) {
     $('#round-count').text(round)
 }
 
+function setLevel(level) {
+    $('#level-count').text(level)
+}
+
 function changeReady(ready) {
     isReady = ready
     if (ready) {
-        $('#ready-flag').text("Ready")
+        $statusButton.text("Ready")
+        $statusButton.css('backgroundColor', 'green')
     } else {
-        $('#ready-flag').text("Not ready")
+        $statusButton.text("Not ready")
+        $statusButton.css('backgroundColor', 'red')
     }
 }
 
 function deleteButton(id) {
-    $(`[data-id="${id}"]`).hide()
+    $(`.button[data-id="${id}"]`).hide()
+}
+
+function rightClick(id) {
+    $(`.button[data-id="${id}"]`).css('box-shadow', '0 0 25px rgb(62, 225, 6)')
+}
+
+function returnPlayersStatus() {
+    $('.player-item').css('color', 'azure')
+}
+
+function playerPassed(id) {
+    $('.player-item[data-id="' + id + '"]').css('color', 'green')
+}
+
+function setHint(hint) {
+    if (hint !== undefined) {
+        $hintContainer.text(hint)
+    }
+}
+
+function setBackground(colorId) {
+    // boss fight
+    if (colorId === 1) {
+        $canvasContainer.css('backgroundColor', '#750202')
+        return
+    }
+    // bonus level
+    if (colorId === 2) {
+        $canvasContainer.css('backgroundColor', '#2e2b00')
+        return;
+    }
+    // default
+    $canvasContainer.css('backgroundColor', '#2c3e50')
+}
+
+function colorExplainer(id) {
+    if (id !== undefined) {
+        $('.player-item[data-id="' + id + '"]').css('color', 'blue')
+    }
+}
+
+function changeBossState(state) {
+    $bossButtonText.html(state.text)
+    $bossButtonHp.text(state.hp)
+}
+
+function showBoss(boss) {
+    if (boss == null) {
+        $bossButtonDiv.hide()
+        $bossDiv.css('backgroundColor', 'rgba(0,0,0,0)')
+        return
+    }
+    $bossButtonText.html(boss.text)
+    $bossButtonHp.text(boss.maxHp)
+    $bossButtonMaxHp.text(boss.maxHp)
+    $bossButtonName.text(boss.name)
+    $bossButtonDiv.show()
+    $bossDiv.css('backgroundColor', '#750202')
 }
 
 function processResponse(buttons) {

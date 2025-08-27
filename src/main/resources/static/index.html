@@ -8,15 +8,41 @@
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+
+<div id="auth-container">
+    <form>
+        <label class="label" for="regName">Your name: </label>
+        <input class="input" type="text" id="regName" name="regName" autofocus maxlength="10">
+        <button class="name-button" type="submit" onclick="setName(); return false;">OK</button>
+    </form>
+</div>
+
+<div id="players-container">
+    <div class="player-list" id="player-list">
+    </div>
+</div>
+
 <div class="container">
     <div id="header-div">
-        <div >Players: <span id="players-count">0</span></div>
-        <div>Round: <span id="round-count">00</span></div>
-        <div>Timer: <span id="timer-count">00</span></div>
-        <div><span id="ready-flag" onclick="clickReady()">Not ready</span></div>
+        <div class="statistic-div">
+            <div>Round: <span id="round-count">0</span></div>
+            <div>Time: <span id="timer-count">0</span></div>
+            <div>Level: <span id="level-count">1</span></div>
+        </div>
+        <div id="hint-div">Wait other players</div>
+        <div class="boss-div">
+            <div id="boss-button-div">
+                <div id="boss-button-name-div"><span id="boss-button-name"></span></div>
+                <div id="boss-button-body-div"></div>
+                <div id="boss-button-hp-div"><span id="boss-button-hp">0</span>/<span id="boss-button-max-hp">0</span></div>
+            </div>
+        </div>
     </div>
 
     <div class="canvas-container" id="canvas-container">
+        <div class="button not-ready-button" id="status-button" onclick="clickReady()">
+            Not ready
+        </div>
     </div>
 
 </div>
@@ -25,5 +51,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/sockjs-client/1.5.0/sockjs.js" integrity="sha512-lyIq9fRcCeSCXhp41XC/250UBmypAHV8KW+AhLcSEIksWHBfhzub6XXwDe67wTpOG8zrO2NAU/TYmEaCW+aQSg==" crossorigin="anonymous"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js" integrity="sha512-iKDtgDyTHjAitUDdLljGhenhPwrbBfqTKWO1mkhSFH3A7blITC9MhYon6SjnMhp4o0rADGw9yAC6EW4t5a4K3g==" crossorigin="anonymous"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/js-cookie@3.0.1/dist/js.cookie.min.js"></script>
 <script type="text/javascript" src="js/main.js"></script>
 </html>

@@ -95,7 +95,7 @@ fun lastLevel(buttonsCount: Int): List<FrontButton> {
         emoji = false,
         emojiRepeat = false,
         symbol = true,
-        symbolRepeat = false,
+        symbolRepeat = true,
     )
 }
 

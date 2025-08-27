@@ -2,7 +2,7 @@ package org.stlm.game.button.buttongame.config.security
 
 import java.security.Principal
 
-class StompPrincipal(private val name: String): Principal {
+class StompPrincipal(private val name: String, val playerName: String): Principal {
     override fun getName(): String {
         return name
     }

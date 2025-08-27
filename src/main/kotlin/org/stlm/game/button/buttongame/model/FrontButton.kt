@@ -27,6 +27,8 @@ data class FrontButton(
      * 1 - черный
      * 2 - зеленый
      * 3 - красный
+     * 4 - синий
+     * 5 - желтый
      */
     val backgroundColor: Int = 0,
     /**
