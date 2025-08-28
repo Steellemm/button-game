@@ -47,7 +47,7 @@ class SimpleLevel(
             chooser = false,
             explainerId = explainerShortId,
             level = gameState.level,
-            hint = "Explain your button to other players"
+            hint = "Explain it!"
         )
         val ce = NewLevelGameEvent(
             leftTime = leftTime,
@@ -56,7 +56,7 @@ class SimpleLevel(
             chooser = true,
             explainerId = explainerShortId,
             level = gameState.level,
-            hint = "Press the button that is now being explained"
+            hint = "Press the right button"
         )
         val messages = playersNames.keys.map {
             if (it == explainer) {

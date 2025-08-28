@@ -14,7 +14,7 @@ const $bossButtonMaxHp = $('#boss-button-max-hp');
 const $hintContainer = $('#hint-div');
 const $canvasContainer = $('#canvas-container');
 const $playerList = $('#player-list');
-const $statusButton = $('#status-button');
+
 const colorMap = {
     background: {
         0: 'azure',
@@ -110,6 +110,9 @@ function processTopicMessage(message) {
     if (message['type'] === 'RightClickEvent') {
         rightClick(message.buttonId)
     }
+    if (message['type'] === 'PlayerNotReadyEvent') {
+        returnPlayerStatus(message.player.id)
+    }
     if (message['type'] === 'PlayerPassEvent') {
         playerPassed(message.player.id)
     }
@@ -117,10 +120,14 @@ function processTopicMessage(message) {
         clearInterval(timer);
         timer = undefined
         changeReady(false)
-        $statusButton.show()
         alert("Game Over")
         setHint("Wait other players")
         setBackground(0)
+        setRound(0)
+        setLevel(0)
+        setTimer(0)
+        createReadyButton()
+        returnPlayersStatus()
     }
     if (message['type'] === 'NewLevelGameEvent') {
         setTimer(message.leftTime)
@@ -129,13 +136,13 @@ function processTopicMessage(message) {
         processResponse(message.buttons)
         returnPlayersStatus()
         colorExplainer(message.explainerId)
-        $statusButton.hide()
         setHint(message.hint)
         setBackground(message.background)
         showBoss(message.boss)
     }
     if (message['type'] === 'NewBossStateEvent') {
         changeBossState(message)
+        processResponse(message.buttons)
     }
     if (message['type'] === 'ReadyEvent') {
         changeReady(message.ready)
@@ -189,8 +196,17 @@ function setLevel(level) {
     $('#level-count').text(level)
 }
 
+function createReadyButton() {
+    $canvasContainer.html($(`
+        <div class="button not-ready-button" id="status-button" onclick="clickReady()">
+            Not ready
+        </div>
+    `))
+}
+
 function changeReady(ready) {
     isReady = ready
+    const $statusButton = $('#status-button');
     if (ready) {
         $statusButton.text("Ready")
         $statusButton.css('backgroundColor', 'green')
@@ -210,6 +226,10 @@ function rightClick(id) {
 
 function returnPlayersStatus() {
     $('.player-item').css('color', 'azure')
+}
+
+function returnPlayerStatus(id) {
+    $('.player-item[data-id="' + id + '"]').css('color', 'azure')
 }
 
 function playerPassed(id) {
@@ -263,6 +283,9 @@ function showBoss(boss) {
 }
 
 function processResponse(buttons) {
+    if (buttons == null) {
+        return
+    }
     // Clear container
     $canvasContainer.empty();
 

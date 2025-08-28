@@ -12,6 +12,14 @@ class BonusLevel(
     private val gameState: GameState
 ) : GameLevelCreator {
 
+    private val levelMap = listOf(
+        2,
+        2,
+        4,
+        4,
+        5
+    )
+
     private var finished = false
 
     private val poll: MutableMap<Int, Int> = mutableMapOf()
@@ -20,11 +28,16 @@ class BonusLevel(
 
 
     override fun generateLevel() {
+        finished = false
+        bonus.clear()
+        poll.clear()
+        clickedPlayers.clear()
+        val buttonCountBonus = -min(levelMap.getOrElse(gameState.level - 1) { 5 }, gameState.buttonCount - 4)
         bonus[0] = ChangeState(
-            bonusTime = gameState.level * 2 + (playersNames.size / 2)
+            bonusTime = gameState.level * 2 + playersNames.size
         )
         bonus[1] = ChangeState(
-            changeButtonCount = -min(gameState.level + 1, gameState.buttonCount - 4)
+            changeButtonCount = buttonCountBonus
         )
         poll[0] = 0
         poll[1] = 0
@@ -79,10 +92,6 @@ class BonusLevel(
     override fun isDone(): Boolean = finished
 
     override fun clear() {
-        finished = false
-        bonus.clear()
-        poll.clear()
-        clickedPlayers.clear()
     }
 
     override fun type() = LevelType.BONUS

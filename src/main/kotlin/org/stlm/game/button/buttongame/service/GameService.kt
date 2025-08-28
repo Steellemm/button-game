@@ -2,38 +2,45 @@ package org.stlm.game.button.buttongame.service
 
 import mu.KLogging
 import org.springframework.stereotype.Service
-import org.stlm.game.button.buttongame.model.GameState
 import org.stlm.game.button.buttongame.model.LevelType
 import org.stlm.game.button.buttongame.model.Player
 import org.stlm.game.button.buttongame.model.event.*
-import org.stlm.game.button.buttongame.service.level.BonusLevel
-import org.stlm.game.button.buttongame.service.level.EasyBossLevel
-import org.stlm.game.button.buttongame.service.level.GameLevelCreator
-import org.stlm.game.button.buttongame.service.level.SimpleLevel
+import org.stlm.game.button.buttongame.service.level.*
 import org.stlm.game.button.buttongame.utils.*
 import java.util.concurrent.ConcurrentHashMap
 
 @Service
 class GameService(
-    val notificationService: NotificationService
+    val notificationService: NotificationService,
+    private final val gameStateComponent: GameStateComponent
 ) {
 
     val players = ConcurrentHashMap<String, Boolean>()
     private final val playersNames = ConcurrentHashMap<String, Player>()
-    private final val gameState = GameState()
+    final val gameState = gameStateComponent.getGameState("")
     val gameTimer = GameTimer()
 
-    final var simpleLevel = SimpleLevel(playersNames, gameState)
-    final var bossLevel = EasyBossLevel(playersNames, gameState)
-    final var bonusLevel = BonusLevel(playersNames, gameState)
+    private final val regularLevel = SimpleLevel(playersNames, gameState)
+    private final val bosses = listOf(
+        EasyBossLevel(playersNames, gameState),
+        LierBossLevel(playersNames, gameState),
+        GuessBossLevel(playersNames, gameState),
+    )
+    private final val bonusLevel = BonusLevel(playersNames, gameState)
 
-    var currentGameLevelCreator: GameLevelCreator? = null
+    var currentGameLevelCreator: GameLevelCreator = regularLevel
 
     @Synchronized
     fun setReady(id: String, ready: Boolean) {
         if (players.containsKey(id) && !gameState.gameStarted) {
             players[id] = ready
             notificationService.sendToUser(id, ReadyEvent(players.size, ready))
+            val player = playersNames[id]!!
+            if (ready) {
+                notificationService.sendToLobby(PlayerPassEvent(player))
+            } else {
+                notificationService.sendToLobby(PlayerNotReadyEvent(playersNames[id]!!))
+            }
             if (players.size > 1 && !players.values.contains(false)) {
                 newRound()
                 gameTimer.start(gameState) {
@@ -45,11 +52,11 @@ class GameService(
 
     @Synchronized
     fun clickButton(id: String, buttonId: Int) {
-        if (!gameState.gameStarted || currentGameLevelCreator == null) {
+        if (!gameState.gameStarted) {
             return
         }
-        notificationService.send(currentGameLevelCreator?.click(id, buttonId))
-        if (currentGameLevelCreator!!.isDone()) {
+        notificationService.send(currentGameLevelCreator.click(id, buttonId))
+        if (currentGameLevelCreator.isDone()) {
             newRound()
         }
     }
@@ -60,25 +67,23 @@ class GameService(
             gameState.gameStartTime = System.currentTimeMillis()
         }
         val newLevel = calculateNewLevel(gameState)
-        if (currentGameLevelCreator?.type() == LevelType.BOSS) {
+        if (currentGameLevelCreator.type() == LevelType.BOSS) {
             currentGameLevelCreator = bonusLevel
-        } else if (currentGameLevelCreator?.type() == LevelType.BONUS) {
-            currentGameLevelCreator = simpleLevel
-            gameState.round++
-            gameState.buttonCount++
+        } else if (currentGameLevelCreator.type() == LevelType.BONUS) {
+            currentGameLevelCreator = regularLevel
             gameState.level = newLevel
         } else if (newLevel != gameState.level) {
-            currentGameLevelCreator = bossLevel
+            currentGameLevelCreator = bosses[newLevel % 3]
             gameState.round++
             gameState.buttonCount++
         } else {
-            currentGameLevelCreator = simpleLevel
+            currentGameLevelCreator = regularLevel
             gameState.round++
             gameState.buttonCount++
         }
         gameState.gameStarted = true
-        currentGameLevelCreator!!.generateLevel()
-        notificationService.send(currentGameLevelCreator!!.getInitialMessages())
+        currentGameLevelCreator.generateLevel()
+        notificationService.send(currentGameLevelCreator.getInitialMessages())
         gameState.gameStarted = true
     }
 
@@ -97,7 +102,8 @@ class GameService(
             return
         }
         players[id] = false
-        playersNames[id] = Player(playersNames.size, name)
+        val shortId = (playersNames.values.maxByOrNull { it.id }?.id ?: 0) + 1
+        playersNames[id] = Player(shortId, name)
         notificationService.sendToLobby(PlayersNumberChangeEvent(players.size, playersNames.values.toList()))
     }
 
@@ -113,11 +119,15 @@ class GameService(
     }
 
     private fun stopGame() {
+        gameTimer.stopTimer()
         gameState.gameStarted = false
         gameState.round = 0
         gameState.gameStartTime = 0L
         gameState.bonusTime = 0
-        simpleLevel.clear()
+        gameState.buttonCount = 3
+        gameState.level = 1
+        currentGameLevelCreator = regularLevel
+        regularLevel.clear()
         players.replaceAll { _, _ ->  false}
     }
 

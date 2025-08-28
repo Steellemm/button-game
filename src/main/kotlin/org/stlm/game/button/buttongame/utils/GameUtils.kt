@@ -3,6 +3,7 @@ package org.stlm.game.button.buttongame.utils
 import org.stlm.game.button.buttongame.model.ChangeState
 import org.stlm.game.button.buttongame.model.GameState
 import kotlin.random.Random
+import kotlin.math.max
 
 const val INITIAL_TIME = 90
 const val BONUS_TIME = 10
@@ -16,8 +17,8 @@ val weightList = listOf(80, 100, 100, 100, 120, 140, 160)
 
 fun calculateNewLevel(gameState: GameState): Int {
     return when {
-        gameState.round <= 5 -> 1
-        gameState.round <= 10 -> 2
+        gameState.round <= 2 -> 1
+        gameState.round <= 4 -> 2
         gameState.round <= 15 -> 3
         gameState.round <= 20 -> 4
         gameState.round <= 25 -> 5
@@ -30,7 +31,7 @@ fun calculateLeftTime(gameState: GameState): Int {
     if (gameState.gameStartTime == 0L){
         return INITIAL_TIME
     }
-    return (INITIAL_TIME - (System.currentTimeMillis() - gameState.gameStartTime) / 1000 + gameState.bonusTime).toInt()
+    return max(0, (INITIAL_TIME - (System.currentTimeMillis() - gameState.gameStartTime) / 1000 + gameState.bonusTime).toInt())
 }
 
 fun generateMessage(changeState: ChangeState): String {

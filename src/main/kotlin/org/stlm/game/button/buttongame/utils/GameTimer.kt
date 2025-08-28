@@ -17,14 +17,15 @@ class GameTimer {
     fun start(gameState: GameState, stopFun: (() -> Unit)) {
         timerFuture = scheduler.scheduleAtFixedRate({
             val leftTime = calculateLeftTime(gameState)
-            if (leftTime < 0) {
+            if (leftTime <= 0) {
+                logger.info { "Timer is reached" }
                 stopTimer()
                 stopFun.invoke()
             }
         }, 0, 1, TimeUnit.SECONDS)
     }
 
-    private fun stopTimer() {
+    fun stopTimer() {
         timerFuture?.cancel(true)
         timerFuture = null
     }
