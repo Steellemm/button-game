@@ -49,6 +49,7 @@ export interface GameMessage {
     player?: Player;
     hp?: number;
     hpChange?: number;
+    text?: string;
 }
 
 const GameContainer = () => {
@@ -146,10 +147,7 @@ const GameContainer = () => {
                 }
                 break;
             case 'GameOverEvent':
-                setPlayers(prev => prev.map(player => ({
-                    ...player,
-                    status: 'normal'
-                })));
+                setPlayersNormal()
                 clearTimer();
                 setIsReady(false);
                 alert("Game Over");
@@ -162,10 +160,7 @@ const GameContainer = () => {
                 setBoss(null);
                 break;
             case 'NewLevelGameEvent':
-                setPlayers(prev => prev.map(player => ({
-                    ...player,
-                    status: 'normal'
-                })));
+                setPlayersNormal()
                 if (message.leftTime !== undefined) {
                     setTimer(message.leftTime);
                 }
@@ -191,13 +186,12 @@ const GameContainer = () => {
                 }
                 break;
             case 'NewBossStateEvent':
-                setPlayers(prev => prev.map(player => ({
-                    ...player,
-                    status: 'normal'
-                })));
-                if (message.hpChange && message.hp) {
-                    changeBossHp(message.hp);
+                setPlayersNormal()
+                if (message.hpChange !== undefined && message.hp !== undefined) {
+                    console.log('changeBossparams if', message.hp, message.text);
+                    changeBossparams(message.hp, message.text);
                 }
+
                 if (message.boss) {
                     changeBossState(message.boss);
                 }
@@ -249,6 +243,13 @@ const GameContainer = () => {
         console.log('Right click on button:', buttonId);
     };
 
+    const setPlayersNormal = () => {
+        setPlayers(prev => prev.map(player => ({
+            ...player,
+            status: 'normal'
+        })));
+    }
+
     const returnPlayerStatus = (playerId: string) => {
         setPlayers(prev => prev.map(player =>
             player.id === playerId
@@ -280,8 +281,24 @@ const GameContainer = () => {
 
     const changeBossHp = (hp: number) => {
         setBoss(boss => {
-            console.log('setBoss', boss);
             if (boss) return {...boss, hp: hp};
+            else return null;
+        })
+    }
+    const changeBossText = (hp: number) => {
+        setBoss(boss => {
+            if (boss) return {...boss, hp: hp};
+            else return null;
+        })
+    }
+
+    const changeBossparams = (hp: number, text?: string) => {
+        setBoss(boss => {
+            if (boss) return {
+                ...boss,
+                hp: hp,
+                text: text ? text : boss.text
+            };
             else return null;
         })
     }
