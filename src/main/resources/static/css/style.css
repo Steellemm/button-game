@@ -1,3 +1,11 @@
+@font-face {
+    font-family: 'Speedy';
+    src: local('Sppedy Regular'),
+    url('../font/SpeedyRegular.ttf') format('truetype');
+    font-weight: 500;
+    font-style: normal;
+}
+
 body {
     margin: 0;
     padding: 20px;
@@ -47,15 +55,20 @@ body {
 .statistic-div {
     height: 200px;
     width: 250px;
-    display: flex;
-    text-align: left;
-    justify-content: center;
-    align-items: center;
-    align-items: flex-start;
-    flex-direction: column;
 }
-.statistic-div div{
-    margin-bottom: 20px;
+
+#timer-count {
+    font-size: 55pt;
+    font-family: Speedy, sans-serif;
+    color: #ffde13;
+}
+
+.game-info-div {
+    margin-top: 15px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12pt;
+    color: #babcbc;
 }
 
 .boss-div{

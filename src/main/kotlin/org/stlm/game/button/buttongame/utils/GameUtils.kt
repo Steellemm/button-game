@@ -17,8 +17,8 @@ val weightList = listOf(80, 100, 100, 100, 120, 140, 160)
 
 fun calculateNewLevel(gameState: GameState): Int {
     return when {
-        gameState.round <= 2 -> 1
-        gameState.round <= 4 -> 2
+        gameState.round <= 5 -> 1
+        gameState.round <= 10 -> 2
         gameState.round <= 15 -> 3
         gameState.round <= 20 -> 4
         gameState.round <= 25 -> 5
