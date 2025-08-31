@@ -27,7 +27,7 @@ class SocketBrokerConfig(
             .addEndpoint("/button")
             .setHandshakeHandler(setPrincipalHandler)
             .addInterceptors(customHandshakeInterceptor)
-            //.setAllowedOrigins("*")
+            .setAllowedOriginPatterns("*")
             .withSockJS()
     }
 }
