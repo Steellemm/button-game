@@ -32,7 +32,7 @@ const PlayersContainer = ({ players }: PlayersContainerProps) => {
 
     return (
         <div id="players-container" className="players-container">
-            <h3 className="players-title">Players ({players.length})</h3>
+            <h3 className="players-title">Players</h3>
             <div className="player-list" id="player-list">
                 {players.map((player) => (
                     <div

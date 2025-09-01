@@ -1,6 +1,6 @@
 'use client';
 
-import { Button, Boss } from './GameContainer';
+import {Button, Boss} from './GameContainer';
 import HtmlEntityDecoder from "@/app/components/HtmlEntityDecoder";
 
 interface GameInterfaceProps {
@@ -51,9 +51,11 @@ const GameInterface = ({
         <div className="container">
             <div id="header-div" className="header-div">
                 <div className="statistic-div">
-                    <div>Round: <span id="round-count">{round}</span></div>
-                    <div>Time: <span id="timer-count">{time}</span></div>
-                    <div>Level: <span id="level-count">{level}</span></div>
+                    <div className="timer-count"><span id="timer-count">{time}</span></div>
+                    <div className="game-info-div">
+                        <div>Level: <span id="level-count">{level}</span></div>
+                        <div>Round: <span id="round-count">{round}</span></div>
+                    </div>
                 </div>
                 <div id="hint-div" className="hint-div">{hint}</div>
                 <div className="boss-div">
@@ -77,7 +79,7 @@ const GameInterface = ({
             <div
                 className="canvas-container"
                 id="canvas-container"
-                style={{ backgroundColor }}
+                style={{backgroundColor}}
             >
                 {buttons.length === 0 ? (
                     <div
@@ -110,7 +112,7 @@ const GameInterface = ({
                                 }}
                                 onClick={() => onButtonClick(btn.id)}
                             >
-                                <HtmlEntityDecoder html={btn.text} />
+                                <HtmlEntityDecoder html={btn.text}/>
                             </div>
                         );
                     })

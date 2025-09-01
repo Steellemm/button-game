@@ -1,3 +1,11 @@
+@font-face {
+  font-family: 'Speedy';
+  src: local('Sppedy Regular'),
+  url('font/SpeedyRegular.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -18,22 +26,29 @@ body {
   overflow: hidden;
 }
 
+/* ... existing styles ... */
+
 .game-container {
   display: flex;
   width: 100%;
   max-width: 1400px;
   gap: 20px;
+  margin: 0 auto;
+  position: relative;
 }
 
 .players-container {
-  position: relative;
-  height: auto;
+  position: fixed;
+  left: 0;
+  top: 0;
+  height: 100vh;
   background-color: rgba(39, 39, 39, 0.8);
-  border-radius: 10px;
   padding: 15px;
   width: 150px;
   font-size: 15pt;
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 100;
+  overflow-y: auto;
 }
 
 .players-title {
@@ -62,11 +77,6 @@ body {
   color: azure;
   border: 1px solid rgba(44, 62, 80, 0.6);
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.player-item:hover {
-  transform: translateX(3px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .player-name {
@@ -147,11 +157,20 @@ body {
 .statistic-div {
   height: 200px;
   width: 250px;
+}
+
+.timer-count span{
+  font-size: 55pt;
+  font-family: Speedy, sans-serif;
+  color: #ffde13;
+}
+
+.game-info-div {
+  margin-top: 15px;
   display: flex;
-  text-align: left;
-  justify-content: center;
-  align-items: flex-start;
-  flex-direction: column;
+  justify-content: space-between;
+  font-size: 12pt;
+  color: #babcbc;
 }
 
 .statistic-div div {
@@ -318,11 +337,6 @@ body {
   color: azure;
   transition: all 0.3s ease;
   margin-top: 15px;
-}
-
-.name-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: translateY(-2px);
 }
 
 .connection-status {
