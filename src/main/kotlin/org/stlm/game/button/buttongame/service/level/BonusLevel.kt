@@ -34,7 +34,7 @@ class BonusLevel(
         clickedPlayers.clear()
         val buttonCountBonus = -min(levelMap.getOrElse(gameState.level - 1) { 5 }, gameState.buttonCount - 4)
         bonus[0] = ChangeState(
-            bonusTime = gameState.level * 2 + playersNames.size
+            bonusTime = gameState.level * 2 + playersNames.size * 2
         )
         bonus[1] = ChangeState(
             changeButtonCount = buttonCountBonus
@@ -62,7 +62,8 @@ class BonusLevel(
             level = gameState.level,
             hint = "Choose bonus for team. It is poll",
             boss = null,
-            background = 2
+            background = 2,
+            buttonsNumber = gameState.buttonCount,
         )
     )
 

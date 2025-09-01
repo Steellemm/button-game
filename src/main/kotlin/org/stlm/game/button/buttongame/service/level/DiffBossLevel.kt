@@ -3,28 +3,32 @@ package org.stlm.game.button.buttongame.service.level
 import org.stlm.game.button.buttongame.model.*
 import org.stlm.game.button.buttongame.model.event.*
 import org.stlm.game.button.buttongame.utils.calculateLeftTime
+import kotlin.math.min
 
-class EasyBossLevel(
+class DiffBossLevel(
     private val playersNames: Map<String, Player>,
     private val gameState: GameState
 ): GameLevelCreator {
 
     private var finished = false
-    private val roundWinners: MutableSet<String> = mutableSetOf()
     private val clickedPlayers: MutableSet<String> = mutableSetOf()
+    private val clickedButtons: MutableSet<Int> = mutableSetOf()
 
-    private lateinit var winButton: FrontButton
     private lateinit var buttons: List<FrontButton>
-    private var fightRound = 0
+    private var maxHp: Int = 0
     private var hp: Int = 0
 
     override fun generateLevel() {
+        newFight()
+        maxHp = min(playersNames.size - 2 + gameState.level, 2)
+        hp = maxHp
+    }
+
+    private fun newFight() {
         clickedPlayers.clear()
-        roundWinners.clear()
+        clickedButtons.clear()
         buttons = generateButtons(gameState.level, gameState.buttonCount)
-        winButton = buttons.first()
         finished = false
-        hp = (playersNames.size * 2) + gameState.level
     }
 
     override fun getInitialMessages(): ClientMessages {
@@ -37,10 +41,10 @@ class EasyBossLevel(
                 chooser = true,
                 explainerId = null,
                 level = gameState.level,
-                hint = "Нажми кнопку с текстом, которую показывает Easer",
+                hint = "Нажмите разные кнопки. Если нажать одинаковую, то Diffy",
                 boss = ButtonBoss(
-                    name = "Easer",
-                    text = winButton.text,
+                    name = "Diffy",
+                    text = "",
                     maxHp = hp
                 ),
                 background = 1,
@@ -54,23 +58,35 @@ class EasyBossLevel(
             return EMPTY_CLIENT_MESSAGES
         }
         clickedPlayers.add(playerId)
-        if (buttonId == winButton.id) {
-            roundWinners.add(playerId)
+        if (clickedButtons.contains(buttonId)) {
+            val hpChange = hp - maxHp
+            hp = maxHp
+            newFight()
+            return ClientMessages(
+                lobbyMessage = NewBossStateEvent(
+                    hp = hp,
+                    hpChange = hpChange,
+                    text = "",
+                    buttons = buttons,
+                    status = RoundResult.TERRIBLE
+                )
+            )
+        } else {
+            clickedButtons.add(buttonId)
         }
-        if (clickedPlayers.size >= playersNames.size) {
-            hp -= roundWinners.size
+        if (clickedPlayers.size >= playersNames.size || clickedPlayers.size >= buttons.size) {
+            hp -= clickedPlayers.size
             if (hp <= 0) {
                 finished = true
                 return EMPTY_CLIENT_MESSAGES
             } else {
-                takeNewButton()
-                clickedPlayers.clear()
-                roundWinners.clear()
+                newFight()
                 return ClientMessages(
                     lobbyMessage = NewBossStateEvent(
                         hp = hp,
-                        hpChange = roundWinners.size,
-                        text = winButton.text
+                        hpChange = clickedPlayers.size,
+                        text = "",
+                        buttons = buttons,
                     )
                 )
             }
@@ -88,9 +104,4 @@ class EasyBossLevel(
     }
 
     override fun type() = LevelType.BOSS
-
-    private fun takeNewButton() {
-        fightRound = (fightRound + 1) % buttons.size
-        winButton = buttons[fightRound]
-    }
 }

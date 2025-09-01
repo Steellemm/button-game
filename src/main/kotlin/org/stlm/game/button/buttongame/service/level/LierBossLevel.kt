@@ -54,7 +54,8 @@ class LierBossLevel(
                             text = if (it == fakePlayer) fakeButton.text else winButton.text,
                             maxHp = hp
                         ),
-                        background = 1
+                        background = 1,
+                        buttonsNumber = gameState.buttonCount,
                     )
                 )
             }

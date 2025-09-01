@@ -9,6 +9,7 @@ data class NewLevelGameEvent(
     val buttons: List<FrontButton> = emptyList(),
     val explainerId: Int?,
     val level: Int,
+    val buttonsNumber: Int,
     val hint: String,
     val boss: ButtonBoss? = null,
     /**

@@ -44,7 +44,8 @@ class GuessBossLevel(
                     text = "",
                     maxHp = hp
                 ),
-                background = 1
+                background = 1,
+                buttonsNumber = gameState.buttonCount,
             )
         )
     }
