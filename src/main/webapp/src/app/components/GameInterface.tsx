@@ -2,6 +2,7 @@
 
 import {Button, Boss} from './GameContainer';
 import HtmlEntityDecoder from "@/app/components/HtmlEntityDecoder";
+import AnimatedTimer from "@/app/components/AnimatedTimer";
 
 interface GameInterfaceProps {
     round: number;
@@ -51,7 +52,7 @@ const GameInterface = ({
         <div className="container">
             <div id="header-div" className="header-div">
                 <div className="statistic-div">
-                    <div className="timer-count"><span id="timer-count">{time}</span></div>
+                    <div><AnimatedTimer time={time}/></div>
                     <div className="game-info-div">
                         <div>Level: <span id="level-count">{level}</span></div>
                         <div>Round: <span id="round-count">{round}</span></div>

@@ -159,10 +159,55 @@ body {
   width: 250px;
 }
 
-.timer-count span{
+.timer-count {
   font-size: 55pt;
   font-family: Speedy, sans-serif;
+}
+
+.timer-default {
   color: #ffde13;
+}
+
+.timer-heal {
+  color: #27ae60;
+}
+
+.timer-damage {
+  color: red;
+}
+
+.timer-display {
+  display: inline-block;
+  min-width: 30px;
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+@keyframes timerScroll {
+  0% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  50% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Additional fun animations */
+.timer-display.animating::before {
+  position: absolute;
+  left: -25px;
+  animation: clockSpin 0.5s ease-in-out;
+}
+
+.timer-display.animating {
+  animation: timerScroll 0.3s ease-in-out;
 }
 
 .game-info-div {

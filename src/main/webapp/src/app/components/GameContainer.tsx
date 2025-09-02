@@ -64,6 +64,7 @@ const GameContainer = () => {
     const [isReady, setIsReady] = useState<boolean>(false);
     const [buttons, setButtons] = useState<Button[]>([]);
     const [backgroundColor, setBackgroundColor] = useState<string>('#2c3e50');
+    const [isTimeAnimating, setIsTimeAnimating] = useState<boolean>(false);
 
     const stompClientRef = useRef<any>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -278,19 +279,6 @@ const GameContainer = () => {
                 setBackgroundColor('#2c3e50');
         }
     };
-
-    const changeBossHp = (hp: number) => {
-        setBoss(boss => {
-            if (boss) return {...boss, hp: hp};
-            else return null;
-        })
-    }
-    const changeBossText = (hp: number) => {
-        setBoss(boss => {
-            if (boss) return {...boss, hp: hp};
-            else return null;
-        })
-    }
 
     const changeBossparams = (hp: number, text?: string) => {
         setBoss(boss => {
