@@ -3,7 +3,7 @@ package org.stlm.game.button.buttongame.service.level
 import org.stlm.game.button.buttongame.model.*
 import org.stlm.game.button.buttongame.model.event.*
 import org.stlm.game.button.buttongame.utils.calculateLeftTime
-import kotlin.math.min
+import kotlin.math.max
 
 class DiffBossLevel(
     private val playersNames: Map<String, Player>,
@@ -20,7 +20,7 @@ class DiffBossLevel(
 
     override fun generateLevel() {
         newFight()
-        maxHp = min(playersNames.size - 2 + gameState.level, 2)
+        maxHp = max(playersNames.size - 2 + gameState.level, 2)
         hp = maxHp
     }
 
