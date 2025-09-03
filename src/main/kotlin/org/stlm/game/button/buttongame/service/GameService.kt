@@ -12,7 +12,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Service
 class GameService(
     val notificationService: NotificationService,
-    private final val gameStateComponent: GameStateComponent
+    gameStateComponent: GameStateComponent
 ) {
 
     val players = ConcurrentHashMap<String, Boolean>()
@@ -25,7 +25,8 @@ class GameService(
         EasyBossLevel(playersNames, gameState),
         LierBossLevel(playersNames, gameState),
         GuessBossLevel(playersNames, gameState),
-    )
+        DiffBossLevel(playersNames, gameState),
+    ).shuffled()
     private final val bonusLevel = BonusLevel(playersNames, gameState)
 
     var currentGameLevelCreator: GameLevelCreator = regularLevel

@@ -82,7 +82,11 @@ class BonusLevel(
             gameState.buttonCount += change.changeButtonCount
             finished = true
             return ClientMessages(
-                lobbyMessage = WinRoundEvent(leftTime = calculateLeftTime(gameState), changeTime = change.bonusTime)
+                lobbyMessage = WinRoundEvent(
+                    leftTime = calculateLeftTime(gameState),
+                    changeTime = change.bonusTime,
+                    status = RoundResult.EXCELLENT
+                )
             )
         }
         return ClientMessages(

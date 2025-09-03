@@ -14,12 +14,14 @@ class SimpleLevel(
     private val explainBefore: MutableSet<String> = mutableSetOf()
 
     private var winButtonId: Int = -1
+    private var startRoundTime: Long = -1
     private lateinit var explainer: String
     private lateinit var buttons: List<FrontButton>
 
     override fun clear() {
         finished = false
         explainBefore.clear()
+        startRoundTime = -1
     }
 
     override fun generateLevel() {
@@ -35,6 +37,7 @@ class SimpleLevel(
         explainBefore.add(explainer)
         finished = false
         roundWinners.clear()
+        startRoundTime = System.currentTimeMillis()
     }
 
     override fun getInitialMessages(): ClientMessages {
@@ -91,8 +94,19 @@ class SimpleLevel(
         if (roundWinners.size >= playersNames.size - 1) {
             finished = true
             gameState.bonusTime += BONUS_TIME
+            val time = System.currentTimeMillis() - startRoundTime
+            val status = when {
+                time < 1500 -> RoundResult.EXCELLENT
+                time < 2000 -> RoundResult.GREAT
+                time < 6000 -> RoundResult.GOOD
+                else -> RoundResult.TERRIBLE
+            }
             return ClientMessages(
-                lobbyMessage = WinRoundEvent(leftTime = calculateLeftTime(gameState), changeTime = BONUS_TIME)
+                lobbyMessage = WinRoundEvent(
+                    leftTime = calculateLeftTime(gameState),
+                    changeTime = BONUS_TIME,
+                    status = status,
+                )
             )
         } else {
             return ClientMessages(

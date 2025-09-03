@@ -41,7 +41,7 @@ class DiffBossLevel(
                 chooser = true,
                 explainerId = null,
                 level = gameState.level,
-                hint = "Нажмите разные кнопки. Если нажать одинаковую, то Diffy",
+                hint = "Нажмите разные кнопки. Если нажать одинаковую, то Diffy восстановит здоровье",
                 boss = ButtonBoss(
                     name = "Diffy",
                     text = "",
