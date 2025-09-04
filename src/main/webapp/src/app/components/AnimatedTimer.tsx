@@ -1,30 +1,28 @@
 'use client';
 
 import {useEffect, useState} from 'react';
-
-interface AnimatedTimerProps {
-    time: number;
-}
+import {useGame} from "@/app/contexts/GameContext";
 
 const TIMER_DEFAULT = 'timer-default'
 const TIMER_HEAL = 'timer-heal'
 const TIMER_DAMAGE = 'timer-damage'
 
-const AnimatedTimer = ({time}: AnimatedTimerProps) => {
-    const [displayTime, setDisplayTime] = useState(time);
+const AnimatedTimer = () => {
+    const {state} = useGame()
+    const [displayTime, setDisplayTime] = useState(state.time);
     const [isAnimating, setIsAnimating] = useState(false);
-    const [state, setState] = useState(TIMER_DEFAULT)
+    const [timerState, setTimerState] = useState(TIMER_DEFAULT)
 
     useEffect(() => {
-        if (time !== displayTime) {
-            if (Math.abs(time - displayTime) <= 1 || Math.abs(time - displayTime) > 20) {
-                setDisplayTime(time);
-                setState(TIMER_DEFAULT)
+        if (state.time !== displayTime) {
+            if (Math.abs(state.time - displayTime) <= 1 || Math.abs(state.time - displayTime) > 20) {
+                setDisplayTime(state.time);
+                setTimerState(TIMER_DEFAULT)
                 return;
             }
             setIsAnimating(true);
-            setState((_) => {
-                if (displayTime < time) return TIMER_HEAL; else return TIMER_DAMAGE
+            setTimerState((_) => {
+                if (displayTime < state.time) return TIMER_HEAL; else return TIMER_DAMAGE
             })
 
             // Fast scroll animation
@@ -35,26 +33,26 @@ const AnimatedTimer = ({time}: AnimatedTimerProps) => {
             let currentStep = 0;
             const scrollInterval = setInterval(() => {
                 if (currentStep < scrollSteps) {
-                    const step = Math.round(Math.abs(time - displayTime) / scrollSteps * currentStep)
-                    const t = time > displayTime ? displayTime + step : displayTime - step
+                    const step = Math.round(Math.abs(state.time - displayTime) / scrollSteps * currentStep)
+                    const t = state.time > displayTime ? displayTime + step : displayTime - step
                     setDisplayTime(t);
                     currentStep++;
                 } else {
                     clearInterval(scrollInterval);
-                    setDisplayTime(time);
-                    setState(TIMER_DEFAULT)
+                    setDisplayTime(state.time);
+                    setTimerState(TIMER_DEFAULT)
                     setIsAnimating(false);
                 }
             }, stepDuration);
 
             return () => clearInterval(scrollInterval);
         }
-    }, [time, displayTime]);
+    }, [state.time, displayTime]);
 
     return (
         <span
             id="timer-count"
-            className={`timer-count timer-display ${state} ${isAnimating ? 'animating' : ''}`}
+            className={`timer-count timer-display ${timerState} ${isAnimating ? 'animating' : ''}`}
         >
       {displayTime}
     </span>

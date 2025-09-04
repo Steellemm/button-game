@@ -7,22 +7,10 @@ import GameInterface from './GameInterface';
 import {Stomp} from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import Cookies from 'js-cookie';
-
-export interface Player {
-    id: string;
-    name: string;
-    status?: 'normal' | 'passed' | 'explainer';
-}
-
-export interface Button {
-    id: string;
-    text: string;
-    width: number;
-    height: number;
-    backgroundColor: number;
-    backgroundTone: number;
-    textColor: number;
-}
+import {GradeType, useGradeMessage} from "@/app/contexts/GradeMessageContext";
+import {useGameActions} from "@/app/hooks/useGameActions";
+import {Button, Player, useGame} from "@/app/contexts/GameContext";
+import {useTimer} from "@/app/hooks/useTimer";
 
 export interface Boss {
     name: string;
@@ -36,7 +24,7 @@ export interface GameMessage {
     message?: string;
     players?: Player[];
     playersNumber?: number;
-    buttonId?: string;
+    buttonId?: number;
     leftTime?: number;
     round?: number;
     level?: number;
@@ -50,21 +38,30 @@ export interface GameMessage {
     hp?: number;
     hpChange?: number;
     text?: string;
+    status?: GradeType;
 }
 
 const GameContainer = () => {
-    const [playerName, setPlayerName] = useState<string>('');
-    const [isConnected, setIsConnected] = useState<boolean>(false);
-    const [players, setPlayers] = useState<Player[]>([]);
+    const {state} = useGame();
+    const {setTimer, clearTimer} = useTimer();
+    const {
+        setPlayerName,
+        setConnectionStatus,
+        updatePlayers,
+        updateUserStatus,
+        setPlayersNormal,
+        setButtons,
+        deleteButton,
+        rightButtonClick,
+        setTime
+    } = useGameActions();
     const [round, setRound] = useState<number>(0);
-    const [time, setTime] = useState<number>(0);
     const [level, setLevel] = useState<number>(1);
     const [hint, setHint] = useState<string>('Wait other players');
     const [boss, setBoss] = useState<Boss | null>(null);
     const [isReady, setIsReady] = useState<boolean>(false);
-    const [buttons, setButtons] = useState<Button[]>([]);
     const [backgroundColor, setBackgroundColor] = useState<string>('#2c3e50');
-    const [isTimeAnimating, setIsTimeAnimating] = useState<boolean>(false);
+    const {showMessage} = useGradeMessage();
 
     const stompClientRef = useRef<any>(null);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -92,7 +89,7 @@ const GameContainer = () => {
         const stompClient = Stomp.over(sock);
 
         stompClient.connect({}, () => {
-            setIsConnected(true);
+            setConnectionStatus(true);
             stompClient.subscribe('/players/lobby/player', (payload) => {
                 processTopicMessage(JSON.parse(payload.body));
             });
@@ -108,11 +105,6 @@ const GameContainer = () => {
         stompClientRef.current = stompClient;
     };
 
-
-    useEffect(() => {
-        console.log('Boss updated:', boss);
-    }, [boss]); // This runs whenever boss changes
-
     const processTopicMessage = (message: GameMessage) => {
         console.log('message', message)
         switch (message.type) {
@@ -121,20 +113,20 @@ const GameContainer = () => {
                 break;
             case 'PlayersNumberChangeEvent':
                 if (message.players) {
-                    setPlayers(message.players);
+                    updatePlayers(message.players);
                 }
                 break;
             case 'FoulEvent':
                 if (message.leftTime !== undefined) {
                     setTimer(message.leftTime);
                 }
-                if (message.buttonId) {
+                if (message.buttonId !== undefined) {
                     deleteButton(message.buttonId);
                 }
                 break;
             case 'RightClickEvent':
                 if (message.buttonId) {
-                    rightClick(message.buttonId);
+                    rightButtonClick(message.buttonId);
                 }
                 break;
             case 'PlayerNotReadyEvent':
@@ -144,7 +136,7 @@ const GameContainer = () => {
                 break;
             case 'PlayerPassEvent':
                 if (message.player) {
-                    playerPassed(message.player.id);
+                    updateUserStatus(message.player.id, 'passed')
                 }
                 break;
             case 'GameOverEvent':
@@ -160,10 +152,18 @@ const GameContainer = () => {
                 setButtons([]);
                 setBoss(null);
                 break;
+            case 'WinRoundEvent' :
+                if (message.status !== undefined && message.status !== "SKIP") {
+                    showMessage(message.status, message.status);
+                }
+                break;
             case 'NewLevelGameEvent':
                 setPlayersNormal()
                 if (message.leftTime !== undefined) {
                     setTimer(message.leftTime);
+                }
+                if (message.explainerId !== undefined) {
+                    updateUserStatus(message.explainerId, 'explainer')
                 }
                 if (message.round !== undefined) {
                     setRound(message.round);
@@ -210,59 +210,10 @@ const GameContainer = () => {
         }
     };
 
-    const setTimer = (leftTime: number) => {
-        setTime(leftTime);
-
-        if (timerRef.current) {
-            clearInterval(timerRef.current);
-        }
-
-        timerRef.current = setInterval(() => {
-            setTime((prevTime) => {
-                if (prevTime <= 1) {
-                    clearTimer();
-                    return 0;
-                }
-                return prevTime - 1;
-            });
-        }, 1000);
-    };
-
-    const clearTimer = () => {
-        if (timerRef.current) {
-            clearInterval(timerRef.current);
-            timerRef.current = null;
-        }
-    };
-
-    const deleteButton = (buttonId: string) => {
-        setButtons(prev => prev.filter(btn => btn.id !== buttonId));
-    };
-
-    const rightClick = (buttonId: string) => {
-        // This would need additional state to track highlighted buttons
-        console.log('Right click on button:', buttonId);
-    };
-
-    const setPlayersNormal = () => {
-        setPlayers(prev => prev.map(player => ({
-            ...player,
-            status: 'normal'
-        })));
-    }
-
     const returnPlayerStatus = (playerId: string) => {
-        setPlayers(prev => prev.map(player =>
+        updatePlayers(state.players.map(player =>
             player.id === playerId
                 ? {...player, status: 'normal'}
-                : player
-        ));
-    };
-
-    const playerPassed = (playerId: string) => {
-        setPlayers(prev => prev.map(player =>
-            player.id === playerId
-                ? {...player, status: 'passed'}
                 : player
         ));
     };
@@ -315,7 +266,7 @@ const GameContainer = () => {
         }
     };
 
-    const handleButtonClick = (buttonId: string) => {
+    const handleButtonClick = (buttonId: number) => {
         if (stompClientRef.current && stompClientRef.current.connected) {
             stompClientRef.current.send(
                 '/app/lobby/input/pressButton',
@@ -325,21 +276,19 @@ const GameContainer = () => {
         }
     };
 
-    if (!playerName) {
+    if (!state.playerName) {
         return <AuthContainer onSetName={handleSetName}/>;
     }
 
     return (
         <div className="game-container">
-            <PlayersContainer players={players}/>
+            <PlayersContainer/>
             <GameInterface
                 round={round}
-                time={time}
                 level={level}
                 hint={hint}
                 boss={boss}
                 isReady={isReady}
-                buttons={buttons}
                 backgroundColor={backgroundColor}
                 onReadyClick={handleReadyClick}
                 onButtonClick={handleButtonClick}

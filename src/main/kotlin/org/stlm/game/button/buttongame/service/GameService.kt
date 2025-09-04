@@ -74,7 +74,7 @@ class GameService(
             currentGameLevelCreator = regularLevel
             gameState.level = newLevel
         } else if (newLevel != gameState.level) {
-            currentGameLevelCreator = bosses[newLevel % 3]
+            currentGameLevelCreator = bosses[newLevel % bosses.size]
             gameState.round++
             gameState.buttonCount++
         } else {

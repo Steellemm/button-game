@@ -1,8 +1,9 @@
 'use client';
 
-import {Button, Boss} from './GameContainer';
+import {Boss} from './GameContainer';
 import HtmlEntityDecoder from "@/app/components/HtmlEntityDecoder";
 import AnimatedTimer from "@/app/components/AnimatedTimer";
+import {useGame} from "@/app/contexts/GameContext";
 
 interface GameInterfaceProps {
     round: number;
@@ -11,10 +12,9 @@ interface GameInterfaceProps {
     hint: string;
     boss: Boss | null;
     isReady: boolean;
-    buttons: Button[];
     backgroundColor: string;
     onReadyClick: () => void;
-    onButtonClick: (buttonId: string) => void;
+    onButtonClick: (buttonId: number) => void;
 }
 
 const colorMap = {
@@ -38,21 +38,20 @@ const colorMap = {
 
 const GameInterface = ({
                            round,
-                           time,
                            level,
                            hint,
                            boss,
                            isReady,
-                           buttons,
                            backgroundColor,
                            onReadyClick,
                            onButtonClick
                        }: GameInterfaceProps) => {
+    const {state} = useGame()
     return (
         <div className="container">
             <div id="header-div" className="header-div">
                 <div className="statistic-div">
-                    <div><AnimatedTimer time={time}/></div>
+                    <div><AnimatedTimer/></div>
                     <div className="game-info-div">
                         <div>Level: <span id="level-count">{level}</span></div>
                         <div>Round: <span id="round-count">{round}</span></div>
@@ -82,7 +81,7 @@ const GameInterface = ({
                 id="canvas-container"
                 style={{backgroundColor}}
             >
-                {buttons.length === 0 ? (
+                {state.buttons.length === 0 ? (
                     <div
                         className={`button ${isReady ? 'ready-button' : 'not-ready-button'}`}
                         id="status-button"
@@ -91,24 +90,26 @@ const GameInterface = ({
                         {isReady ? 'Ready' : 'Not ready'}
                     </div>
                 ) : (
-                    buttons.map((btn) => {
+                    state.buttons.map((btn) => {
                         const bgColor = colorMap.background[btn.backgroundColor as keyof typeof colorMap.background];
                         const tone = btn.backgroundTone;
                         const backgroundColor = tone === 100
                             ? bgColor
                             : `color-mix(in srgb, ${bgColor} ${tone}%, black)`;
+                        const rightClicked = btn.isRightClicked ? '0 0 25px rgb(62, 225, 6)' : 'none'
 
                         const textColor = colorMap.text[btn.textColor as keyof typeof colorMap.text];
 
                         return (
                             <div
                                 key={btn.id}
-                                className="button game-button"
+                                className={`button game-button ${btn.isRightClicked ? 'button-right-clicked' : ''}`}
                                 data-id={btn.id}
                                 style={{
                                     width: `${(80 * btn.width) / 100}px`,
                                     height: `${(80 * btn.height) / 100}px`,
                                     backgroundColor,
+                                    boxShadow: rightClicked,
                                     color: textColor
                                 }}
                                 onClick={() => onButtonClick(btn.id)}
