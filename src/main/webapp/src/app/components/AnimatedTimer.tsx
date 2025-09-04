@@ -21,7 +21,7 @@ const AnimatedTimer = () => {
                 return;
             }
             setIsAnimating(true);
-            setTimerState((_) => {
+            setTimerState(() => {
                 if (displayTime < state.time) return TIMER_HEAL; else return TIMER_DAMAGE
             })
 

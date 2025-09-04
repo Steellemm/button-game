@@ -7,7 +7,6 @@ import {useGame} from "@/app/contexts/GameContext";
 
 interface GameInterfaceProps {
     round: number;
-    time: number;
     level: number;
     hint: string;
     boss: Boss | null;
